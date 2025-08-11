@@ -4,6 +4,7 @@
 - Health check endpoint
 - Error handling with proper HTTP status codes
 - CORS enabled for frontend integration
+- Redis caching for improved performance
 
 ## Environment Variables
 
@@ -14,6 +15,11 @@ Create a `.env` file based on `.env.example`:
 ```bash
 docker-compose --env-file .env.example up -d --build
 ```
+
+This will start:
+
+- **Backend API** on port 8080
+- **Redis** on port 6379 for caching
 
 ## API Endpoints
 

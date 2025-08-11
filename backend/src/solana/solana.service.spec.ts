@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { SolanaService } from './solana.service';
 import { Connection } from '@solana/web3.js';
 
@@ -14,10 +15,28 @@ jest.mock('@solana/web3.js', () => ({
 describe('SolanaService', () => {
   let service: SolanaService;
   let mockConnection: jest.Mocked<Connection>;
+  let mockCacheManager: any;
 
   beforeEach(async () => {
+    mockCacheManager = {
+      get: jest.fn(),
+      set: jest.fn(),
+      store: {
+        keys: jest.fn(),
+        client: {
+          keys: jest.fn(),
+        },
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SolanaService],
+      providers: [
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
+        },
+        SolanaService,
+      ],
     }).compile();
 
     service = module.get<SolanaService>(SolanaService);
@@ -38,7 +57,7 @@ describe('SolanaService', () => {
 
       const result = await service.getTransactionCount(123456);
 
-      expect(result).toBe(3);
+      expect(result['count']).toBe(3);
       expect(mockConnection.getBlock).toHaveBeenCalledWith(123456, {
         maxSupportedTransactionVersion: 0,
       });
@@ -53,7 +72,7 @@ describe('SolanaService', () => {
 
       const result = await service.getTransactionCount(123456);
 
-      expect(result).toBe(0);
+      expect(result['count']).toBe(0);
     });
 
     it('should return 0 for block with undefined transactions', async () => {
@@ -65,7 +84,7 @@ describe('SolanaService', () => {
 
       const result = await service.getTransactionCount(123456);
 
-      expect(result).toBe(0);
+      expect(result['count']).toBe(0);
     });
 
     it('should throw error when block is not found', async () => {

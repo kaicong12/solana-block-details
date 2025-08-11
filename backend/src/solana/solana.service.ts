@@ -1,12 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Connection, clusterApiUrl } from '@solana/web3.js';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class SolanaService {
   private readonly connection: Connection;
   private readonly logger = new Logger(SolanaService.name);
 
-  constructor() {
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
     // Use mainnet-beta for production, devnet for development
     const rpcEndpoint =
       process.env.SOLANA_RPC_URL || clusterApiUrl('mainnet-beta');
@@ -14,8 +16,18 @@ export class SolanaService {
     this.logger.log(`Connected to Solana RPC: ${rpcEndpoint}`);
   }
 
-  async getTransactionCount(blockNumber: number): Promise<number> {
+  async getTransactionCount(
+    blockNumber: number,
+  ): Promise<{ count: number; cached: boolean }> {
+    const cacheKey = `block:${blockNumber}`;
     try {
+      // Check cache first
+      const cachedResult = await this.cacheManager.get<number>(cacheKey);
+      if (cachedResult !== undefined) {
+        this.logger.log(`Cache hit for block ${blockNumber}`);
+        return { count: cachedResult, cached: true };
+      }
+
       this.logger.log(`Fetching block ${blockNumber}`);
 
       const block = await this.connection.getBlock(blockNumber, {
@@ -31,7 +43,10 @@ export class SolanaService {
         `Block ${blockNumber} has ${transactionCount} transactions`,
       );
 
-      return transactionCount;
+      // Cache the result for 24 hours (86400 seconds)
+      await this.cacheManager.set(cacheKey, transactionCount, 86400000);
+
+      return { count: transactionCount, cached: false };
     } catch (error) {
       this.logger.error(`Error fetching block ${blockNumber}:`, error.message);
       throw error;
