@@ -6,6 +6,18 @@
 - CORS enabled for frontend integration
 - Redis caching for improved performance
 
+## Screenshots
+
+### Initial State
+
+![Empty State](./img/empty_state.jpeg)
+_The application in its initial state, ready to accept block number queries_
+
+### After Fetching Data
+
+![Fetched Data](./img/fetched_data.jpeg)
+_The application displaying transaction count data for a queried Solana block_
+
 ## Environment Variables
 
 Create a `.env` file based on `.env.example`:
