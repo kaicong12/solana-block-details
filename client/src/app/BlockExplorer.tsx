@@ -3,9 +3,14 @@
 import { useState } from "react";
 import Head from "next/head";
 
+interface ITransactionCount {
+  count: number;
+  cached: boolean;
+}
+
 interface ApiResponse {
   blockNumber: number;
-  transactionCount: number;
+  transactionCount: ITransactionCount;
   timestamp?: string;
 }
 
@@ -149,7 +154,7 @@ export default function BlockExplorer({
                   <div className="flex justify-between items-center">
                     <span className="text-green-200">Transaction Count:</span>
                     <span className="text-white font-mono text-xl font-bold">
-                      {result.transactionCount.toLocaleString()}
+                      {result.transactionCount.count.toLocaleString()}
                     </span>
                   </div>
                   {result.timestamp && (
