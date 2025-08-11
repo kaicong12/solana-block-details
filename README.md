@@ -9,6 +9,12 @@
 
 Create a `.env` file based on `.env.example`:
 
+## Installation
+
+```bash
+docker-compose --env-file .env.example up -d --build
+```
+
 ## API Endpoints
 
 ### Get Transaction Count
