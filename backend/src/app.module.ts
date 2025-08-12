@@ -3,6 +3,7 @@ import { SolanaModule } from './solana/solana.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 
+console.log({ host: process.env.REDIS_HOST });
 @Module({
   imports: [
     CacheModule.registerAsync({
